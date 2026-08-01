@@ -1,0 +1,63 @@
+print "=== Origin Codegen Model - Accuracy Evaluation ==="
+print ""
+
+import transformer
+
+print "Loading model..."
+init_transformer("", "Qwen/Qwen3-1.7B", "./origin_codegen_model")
+load_tokens()
+load_model()
+load_adapter("origin_codegen_model")
+print "Model loaded successfully"
+print ""
+
+py {
+    import json
+    with open("test_set.json", "r", encoding="utf-8") as f:
+        _test_data = json.load(f)
+    _test_total = len(_test_data)
+    print("Loaded", _test_total, "test examples")
+}
+
+let num_iterations = 10
+let sum_prob = 0.0
+
+for iteration in range(0, num_iterations) {
+    let correct_count = 0
+
+    py {
+        import random
+        random.shuffle(_test_data)
+    }
+
+    for i in range(0, _test_total) {
+        let instruction = _test_data[i]["instruction"]
+        let expected = _test_data[i]["expected_output"]
+
+        let generated = generate(instruction)
+
+        py {
+            import subprocess
+            with open("origintest.or", "w", encoding="utf-8") as f:
+                f.write(_generated)
+            proc = subprocess.run(
+                ["origin", "i", "origintest.or"],
+                capture_output=True,
+                text=True
+            )
+            _actual = proc.stdout.strip()
+        }
+
+        if _actual == expected {
+            let correct_count = correct_count + 1
+        }
+    }
+
+    let probability = correct_count * 100 / _test_total
+    print "Iteration", iteration + 1, "Accuracy:", probability, "% (", correct_count, "/", _test_total, ")"
+    let sum_prob = sum_prob + probability
+}
+
+let final_accuracy = sum_prob / num_iterations
+print ""
+print "Average Accuracy:", final_accuracy, "%"
