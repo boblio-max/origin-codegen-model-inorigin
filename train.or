@@ -1,0 +1,80 @@
+print "=== Origin Codegen Model Training ==="
+print ""
+
+import transformer
+
+print "1. Setting up transformer..."
+init_transformer("origin_instruction_tuning_dataset_v3.json", "Qwen/Qwen3-1.7B", "./origin_codegen_model")
+print "   data_path:", _tfr.data_path
+print "   model_name:", _tfr.model_name
+print "   output_dir:", _tfr.output_dir
+print "   OK"
+
+print ""
+print "2. Configuring..."
+tf_config(512, 2, 5, 2e-4)
+print "   max_seq:", _tfr.max_seq
+print "   batch_size:", _tfr.batch_size
+print "   epochs:", _tfr.epoch
+print "   lr:", _tfr.lr
+print "   OK"
+
+print ""
+print "3. Loading data..."
+load_data()
+print "   loaded:", len(_tfr.dataset), "samples"
+
+print ""
+print "4. Shuffling data..."
+shuffle_data()
+print "   OK"
+
+print ""
+print "5. Splitting data..."
+split_data()
+print "   train:", len(_tfr.train_data), "test:", len(_tfr.test_data)
+print "   OK"
+
+print ""
+print "6. Setting up LoRA..."
+lora(8, 16, ["q_proj", "v_proj"], 0.05, "none", "CAUSAL_LM")
+print "   r:", _lora_cfg.lora_config.r
+print "   alpha:", _lora_cfg.lora_config.lora_alpha
+print "   targets:", _lora_cfg.lora_config.target_modules
+print "   OK"
+
+print ""
+print "7. Loading tokenizer and model..."
+load_tokens()
+load_model()
+print "   OK"
+
+print ""
+print "8. Applying LoRA..."
+merge_model()
+print "   LoRA applied successfully"
+print "   OK"
+
+print ""
+print "9. Configuring training..."
+init_training_args(2, "./logs", 10, 500, 2, true, "none")
+print "   gradient_accumulation: 2"
+print "   log_dir: ./logs"
+print "   log_steps: 10"
+print "   save_steps: 500"
+print "   save_total_limit: 2"
+print "   load_best_model: true"
+print "   OK"
+
+print ""
+print "10. Initializing trainer..."
+init_trainer()
+print "   OK"
+
+print ""
+print "11. Starting training..."
+train()
+print "   OK"
+
+print ""
+print "=== Training complete ==="

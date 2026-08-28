@@ -1,0 +1,30 @@
+print "=== Origin Codegen Model - Interactive Inference ==="
+print ""
+
+import transformer
+
+print "Loading model..."
+init_transformer("", "Qwen/Qwen3-1.7B", "./origin_codegen_model")
+load_tokens()
+load_model()
+load_adapter("origin_codegen_model")
+print "Model loaded successfully"
+print ""
+print "Type natural language instructions to generate Origin code."
+print "Type 'exit' to quit."
+print ""
+
+let running = true
+
+while running {
+    let user = input "> "
+
+    if user == "exit" {
+        let running = false
+    } else {
+        let result = generate(user)
+        print result
+    }
+}
+
+print "Goodbye!"
