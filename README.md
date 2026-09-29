@@ -1,67 +1,16 @@
 # origin-codegen-model-inorigin
 
-A code generation model that translates natural language instructions into [Origin](https://github.com/origin-lang/origin) code. Built on Qwen3-1.7B with LoRA fine-tuning.
+same mission as `origin-codegen-model` (teach an LLM to write Origin code from English instructions) but with a twist that melts my brain a little: the entire fine-tuning pipeline is written *in Origin itself*. LoRA-tuning Qwen3-1.7B via `.or` scripts.
 
-## Overview
+## how it actually works
 
-This project fine-tunes a small language model to generate Origin programs from plain English descriptions. The training dataset contains ~84k instruction-output pairs covering arithmetic, loops, conditionals, lists, and more.
+- `train.or` — drives the `transformer` lib to LoRA-tune Qwen3-1.7B (rank 8 / alpha 16, 5 epochs, seq length 512) on ~84k instruction pairs (`origin_instruction_tuning_dataset_v3.json`)
+- `test_model.or` — 10-iteration accuracy eval (`test_set.json`, 20 examples)
+- `origin-model.or` — model definition / config side
+- REPL included for prompting the trained model interactively
 
-## Repository Contents
+compared to the Python version of this project, the training script here is cleaner and actually coherent — the `.or` wrapper forces a simpler structure, which turns out to be a feature.
 
-| File | Description |
-|------|-------------|
-| `origin_instruction_tuning_dataset_v3.json` | Training dataset (~84k samples) |
-| `test_set.json` | Evaluation dataset (20 examples with expected outputs) |
-| `train.or` | Training script (Origin + transformer module) |
-| `test_model.or` | Accuracy evaluation script |
-| `origin-model.or` | Interactive inference REPL |
+## stack
 
-## Requirements
-
-- Origin language runtime
-- Python packages: `transformers`, `peft`, `datasets`
-
-## Usage
-
-### Train the model
-
-```bash
-origin train.or
-```
-
-This will:
-1. Load the Qwen3-1.7B base model
-2. Apply LoRA adapters (r=8, alpha=16, targets: q_proj/v_proj)
-3. Train for 5 epochs with batch size 2 and learning rate 2e-4
-4. Save the fine-tuned model to `./origin_codegen_model`
-
-### Evaluate accuracy
-
-```bash
-origin test_model.or
-```
-
-Runs 10 iterations of shuffled test examples and reports average accuracy.
-
-### Interactive inference
-
-```bash
-origin origin-model.or
-```
-
-Opens a REPL where you type natural language instructions and the model generates Origin code.
-
-## Training Configuration
-
-- **Base model:** Qwen/Qwen3-1.7B
-- **Method:** LoRA (rank 8, alpha 16)
-- **Target modules:** q_proj, v_proj
-- **Max sequence length:** 512
-- **Batch size:** 2
-- **Epochs:** 5
-- **Learning rate:** 2e-4
-- **Gradient accumulation:** 2
-
-## License
-
-MIT
+Origin language + JSON datasets, Hugging Face `transformers` + PEFT/LoRA underneath, Qwen3-1.7B. MIT licensed.
